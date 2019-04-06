@@ -1,37 +1,54 @@
-var express = require("express");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-var hbs = require("express-handlebars");
+//Dependencies 
+const express = require("express");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const exphbs = require("express-handlebars");
 
-// Our scraping tools
-// Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
-var axios = require("axios");
-var cheerio = require("cheerio");
+//Scraping tools
+//Axios is a promised-based http library, similar to jQuery's Ajax method
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-// Require all models
+//Require all models
 var db = require("./models");
 
+// Initialize Express
+const app = express();
 var PORT = 3000;
 
-// Initialize Express
-var app = express();
-
-// Configure middleware
-
-// Use morgan logger for logging requests
+//Use morgan logger for logging requests
 app.use(logger("dev"));
 // Parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// Make public a static folder
+//Make public a static folder
 app.use(express.static("public"));
+app.engine("handlebars", exphbs({
+  defaultLayout: "main"})
+);
+app.set("view engine", "handlebars");
 
 // Connect to the Mongo DB
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/articles";
 mongoose.connect(MONGODB_URI, { useNewUrlParser : true });
 
-// Routes
+//Routes
+
+//GET route for home page - not working yet
+app.get("/", (req, res) => {
+  db.Article.find({})
+  .then(function(dbArticle){
+    let hbsobj;
+    hbsobj = {
+      article: dbArticle
+    };
+    res.render("scraper", hbsobj);
+  })
+  .catch(function(err){
+    res.json(err);
+  })
+});
+
 //HTML Routes - not working 500 error
 //   app.get("/", function(req, res) {
 //     res.render("index");
